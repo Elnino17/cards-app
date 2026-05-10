@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة البطاقات | Card Manager</title>
+    <meta name="description" content="نظام إدارة البطاقات والاشتراكات - Card Subscription Management System">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="5" width="20" height="14" rx="3"/>
+                        <path d="M2 10h20"/>
+                    </svg>
+                </div>
+                <span class="logo-text">البطاقات</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                <span>لوحة التحكم</span>
+            </button>
+            <button class="nav-item" data-page="cards" id="nav-cards">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="3"/>
+                    <path d="M2 10h20"/>
+                </svg>
+                <span>البطاقات</span>
+            </button>
+            <button class="nav-item" data-page="debts" id="nav-debts">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>الديون</span>
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="nav-item" id="btn-import-excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>استيراد Excel</span>
+            </button>
+            <button class="nav-item" id="btn-export-excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>تصدير Excel</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <button class="menu-toggle" id="menu-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <div class="search-container">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" class="search-input" id="global-search" placeholder="بحث عن بطاقة أو اسم...">
+            </div>
+            <button class="btn btn-primary" id="btn-add-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>إضافة بطاقة</span>
+            </button>
+        </header>
+
+        <!-- Dashboard Page -->
+        <section class="page active" id="page-dashboard">
+            <div class="page-header">
+                <h1>لوحة التحكم</h1>
+                <p class="page-subtitle">نظرة عامة على البطاقات والاشتراكات</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="5" width="20" height="14" rx="3"/>
+                            <path d="M2 10h20"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-total">0</span>
+                        <span class="stat-label">إجمالي البطاقات</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-paid">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-paid">0</span>
+                        <span class="stat-label">مدفوع (خالص)</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-unpaid">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-unpaid">0</span>
+                        <span class="stat-label">غير مدفوع</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-debt">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-debt">0</span>
+                        <span class="stat-label">إجمالي الديون (دج)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duration Breakdown -->
+            <div class="dashboard-grid">
+                <div class="chart-card">
+                    <h3 class="card-title">توزيع المدة</h3>
+                    <div class="duration-bars" id="duration-bars"></div>
+                </div>
+                <div class="chart-card">
+                    <h3 class="card-title">آخر البطاقات المضافة</h3>
+                    <div class="recent-cards" id="recent-cards"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards Page -->
+        <section class="page" id="page-cards">
+            <div class="page-header">
+                <h1>البطاقات</h1>
+                <div class="filter-bar">
+                    <select class="filter-select" id="filter-duration">
+                        <option value="">كل المدد</option>
+                        <option value="عام">عام</option>
+                        <option value="6 اشهر">6 أشهر</option>
+                        <option value="3 اشهر">3 أشهر</option>
+                        <option value="شهر">شهر</option>
+                    </select>
+                    <select class="filter-select" id="filter-paid">
+                        <option value="">الكل</option>
+                        <option value="نعم">مدفوع</option>
+                        <option value="لا">غير مدفوع</option>
+                    </select>
+                    <select class="filter-select" id="filter-sort">
+                        <option value="insertion">ترتيب الإضافة (الافتراضي)</option>
+                        <option value="newest">الأحدث بالتاريخ</option>
+                        <option value="oldest">الأقدم بالتاريخ</option>
+                        <option value="name">بالاسم</option>
+                        <option value="debt-high">أعلى دين</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table" id="cards-table">
+                    <thead>
+                        <tr>
+                            <th>رقم البطاقة</th>
+                            <th>الاسم</th>
+                            <th>المدة</th>
+                            <th>الحالة</th>
+                            <th>الدين</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cards-tbody">
+                    </tbody>
+                </table>
+                <div class="empty-state" id="empty-state" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
+                        <rect x="2" y="5" width="20" height="14" rx="3"/>
+                        <path d="M2 10h20"/>
+                        <line x1="6" y1="14" x2="10" y2="14"/>
+                    </svg>
+                    <p>لا توجد بطاقات</p>
+                    <span>اضغط "إضافة بطاقة" للبدء</span>
+                </div>
+            </div>
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </section>
+
+        <!-- Debts Page -->
+        <section class="page" id="page-debts">
+            <div class="page-header">
+                <h1>الديون</h1>
+                <p class="page-subtitle">عرض البطاقات التي عليها ديون</p>
+            </div>
+            <div class="debts-summary" id="debts-summary"></div>
+            <div class="table-container">
+                <table class="data-table" id="debts-table">
+                    <thead>
+                        <tr>
+                            <th>رقم البطاقة</th>
+                            <th>الاسم</th>
+                            <th>المدة</th>
+                            <th>الدين</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debts-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Add/Edit Card -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="card-modal">
+            <div class="modal-header">
+                <h2 id="modal-title">إضافة بطاقة جديدة</h2>
+                <button class="modal-close" id="modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="card-form" class="modal-form">
+                <input type="hidden" id="card-edit-id">
+                <div class="form-group">
+                    <label for="card-number">رقم البطاقة</label>
+                    <input type="text" id="card-number" placeholder="مثال: 16831326" required>
+                </div>
+                <div class="form-group">
+                    <label for="card-name">الاسم</label>
+                    <input type="text" id="card-name" placeholder="اسم صاحب البطاقة" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-duration">المدة</label>
+                        <select id="card-duration" required>
+                            <option value="عام">عام</option>
+                            <option value="6 اشهر">6 أشهر</option>
+                            <option value="3 اشهر">3 أشهر</option>
+                            <option value="شهر">شهر</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-paid">الحالة</label>
+                        <select id="card-paid" required>
+                            <option value="نعم">مدفوع (نعم)</option>
+                            <option value="لا">غير مدفوع (لا)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-debt">الدين (دج)</label>
+                        <input type="number" id="card-debt" placeholder="0" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-date">التاريخ</label>
+                        <input type="date" id="card-date" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="btn-cancel">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save">حفظ البطاقة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>تأكيد الحذف</h2>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من حذف هذه البطاقة؟</p>
+                <p class="text-muted" id="delete-card-info"></p>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-ghost" id="btn-cancel-delete">إلغاء</button>
+                <button class="btn btn-danger" id="btn-confirm-delete">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none">
+
+    <script src="preload.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
